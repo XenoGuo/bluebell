@@ -1,0 +1,31 @@
+name: "web_app"
+mode: "release"
+port: 8081
+start_time: "2025-12-24"
+machine_id: 1
+
+log:
+  level: "debug"
+  filename: "./logs/web_app.log"
+  max_size: 50 #MB
+  max_age: 7   #day
+  max_backups: 10  #quantity
+
+mysql:
+  host: "127.0.0.1"
+  port: 3306
+  user: "root"
+  password: "root"
+  dbname: "bluebell"
+  max_open_conns: 200
+  max_idle_conns: 50
+
+redis:
+  host: "127.0.0.1"
+  port: 6379
+  db: 0
+  password: "root"
+  pool_size: 100
+
+auth:
+  jwt_expire: 8760
