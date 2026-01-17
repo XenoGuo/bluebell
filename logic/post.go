@@ -2,9 +2,12 @@ package logic
 
 import (
 	"bluebell/dao/mysql"
+	"bluebell/dao/redis"
 	"bluebell/models"
 	"bluebell/pkg/snowflake"
 	"errors"
+
+	"go.uber.org/zap"
 )
 
 // CreatePost 创建帖子
@@ -13,6 +16,10 @@ func CreatePost(p *models.Post) error {
 	p.ID = snowflake.GenID()
 	// 2.保存到数据库
 	if err := mysql.CreatePost(p); err != nil {
+		return err
+	}
+	// 记录帖子信息到redis
+	if err := redis.CreatePost(p.ID, p.CommunityID); err != nil {
 		return err
 	}
 	// 3.返回
@@ -39,10 +46,11 @@ func GetPostDetailById(id int64) (*models.ApiPostDetail, error) {
 	if err != nil {
 		return nil, err
 	}
-	postDetail := new(models.ApiPostDetail)
-	postDetail.AuthorName = user.Username
-	postDetail.CommunityDetail = communityDetail
-	postDetail.Post = post
+	postDetail := &models.ApiPostDetail{
+		AuthorName:      user.Username,
+		CommunityDetail: communityDetail,
+		Post:            post,
+	}
 	return postDetail, nil
 }
 
@@ -64,4 +72,89 @@ func GetPostList(page, size int64) (data *models.ApiPostPage, err error) {
 		Size:  size,
 	}
 	return d, nil
+}
+
+func GetPostListSorted(p *models.ParamPostListPage) (*models.ApiPostPage, error) {
+	if p.CommunityID > 0 {
+		sort, err := getCommunityPostsBySort(p)
+		if err != nil {
+			return nil, err
+		}
+		return sort, nil
+	} else {
+		sort, err := getPostListBySort(p)
+		if err != nil {
+			return nil, err
+		}
+		return sort, nil
+	}
+}
+
+func getPostListBySort(p *models.ParamPostListPage) (*models.ApiPostPage, error) {
+	return getPostsByGetter(
+		func() ([]string, error) { return redis.GetPostIDsInOrder(p) },
+		p.Page, p.Size,
+		"post list is empty",
+	)
+}
+
+func getCommunityPostsBySort(p *models.ParamPostListPage) (*models.ApiPostPage, error) {
+	return getPostsByGetter(
+		func() ([]string, error) { return redis.GetCommunityPostIDsOrder(p) },
+		p.Page, p.Size,
+		"community post list is empty",
+		zap.Int64("community_id", p.CommunityID),
+	)
+}
+
+func buildPostPage(ids []string, page, size int64) (*models.ApiPostPage, error) {
+	posts, err := mysql.GetPostsByIDs(ids)
+	if err != nil {
+		return nil, err
+	}
+
+	voteData, err := redis.GetPostVoteData(ids)
+	if err != nil {
+		return nil, err
+	}
+
+	list := make([]models.ApiPostDetail, 0, len(posts))
+	for idx, post := range posts {
+		user, err := mysql.GetUserById(post.AuthorID)
+		if err != nil {
+			continue
+		}
+		c, err := mysql.GetCommunityDetailById(post.CommunityID)
+		if err != nil {
+			continue
+		}
+
+		list = append(list, models.ApiPostDetail{
+			AuthorName:      user.Username,
+			CommunityDetail: c,
+			Post:            post,
+			VoteNum:         voteData[idx],
+		})
+	}
+
+	return &models.ApiPostPage{
+		List:  list,
+		Page:  page,
+		Size:  size,
+		Total: int64(len(list)),
+	}, nil
+}
+
+type idsGetter func() ([]string, error)
+
+func getPostsByGetter(getIDs idsGetter, page, size int64, emptyLog string, fields ...zap.Field) (*models.ApiPostPage, error) {
+	ids, err := getIDs()
+	if err != nil {
+		return nil, err
+	}
+	if len(ids) == 0 {
+		zap.L().Warn(emptyLog, fields...)
+		return nil, nil
+	}
+	return buildPostPage(ids, page, size)
 }

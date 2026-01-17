@@ -57,7 +57,7 @@ func GetPostDetailHandler(c *gin.Context) {
 
 func GetPostListHandler(c *gin.Context) {
 	// 1.获取分页参数
-	p := new(models.PageInfo)
+	p := new(models.ParamPage)
 	if err := c.ShouldBindQuery(p); err != nil {
 		zap.L().Error("GetPostList ShouldBindQuery err", zap.Error(err))
 		ResponseError(c, CodeInvalidParam)
@@ -76,6 +76,35 @@ func GetPostListHandler(c *gin.Context) {
 	posts, err := logic.GetPostList(p.Page, p.Size)
 	if err != nil {
 		zap.L().Error("logic.GetPostListAll err", zap.Error(err))
+		ResponseError(c, CodeServerBusy)
+		return
+	}
+	// 3.响应数据
+	ResponseSuccess(c, posts)
+}
+
+// GetPostListHandler2 按时间排序 或 按分数排序列表 或综合热度排序
+func GetPostListHandler2(c *gin.Context) {
+	// 1.获取分页参数
+	p := new(models.ParamPostListPage)
+	if err := c.ShouldBindQuery(p); err != nil {
+		zap.L().Error("GetPostList ShouldBindQuery err", zap.Error(err))
+		ResponseError(c, CodeInvalidParam)
+		return
+	}
+	if p.Page <= 0 {
+		p.Page = 1
+	}
+	if p.Size <= 0 {
+		p.Size = 10
+	}
+	if p.Size > 50 {
+		p.Size = 50
+	}
+	// 2.根据参数取分页数据
+	posts, err := logic.GetPostListSorted(p)
+	if err != nil {
+		zap.L().Error("logic.GetPostListSorted err", zap.Error(err))
 		ResponseError(c, CodeServerBusy)
 		return
 	}
