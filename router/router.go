@@ -9,6 +9,12 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+
+	// 引入swagger
+	_ "bluebell/docs" // 千万不要忘了导入把你上一步生成的docs
+
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func Setup(mode string) *gin.Engine {
@@ -24,6 +30,9 @@ func Setup(mode string) *gin.Engine {
 	v1.POST("/signup", controller.SignUpHandler)
 	// 登录
 	v1.POST("/login", controller.LoginHandler)
+
+	// swagger
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	v1.Use(JWTAuthMiddleware())
 

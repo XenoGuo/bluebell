@@ -9,6 +9,17 @@ import (
 	"go.uber.org/zap"
 )
 
+// CreatePostHandler 在社区中创建帖子
+// @Summary 在社区中创建帖子
+// @Description 需要参数，通过结构体创建帖子信息
+// @Tags 帖子相关接口
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string true "Bearer 用户令牌"
+// @Param object query models.Post true "帖子json"
+// @Security ApiKeyAuth
+// @Success 1000 {object} controller.ResponseData
+// @Router /post [post]
 func CreatePostHandler(c *gin.Context) {
 	// 1.获取参数与参数校验
 	// c.ShouldBindJSON() // validator --> binding tag
@@ -35,6 +46,17 @@ func CreatePostHandler(c *gin.Context) {
 	ResponseSuccess(c, nil)
 }
 
+// GetPostDetailHandler 获取帖子详情
+// @Summary 获取帖子详情
+// @Description 需要参数，根据id查询帖子详情
+// @Tags 帖子相关接口
+// @Accept application/x-www-form-urlencoded
+// @Produce application/json
+// @Param Authorization header string true "Bearer 用户令牌"
+// @Param id path string true "帖子id"
+// @Security ApiKeyAuth
+// @Success 1000 {object} models.ApiPostDetail
+// @Router /post/:id [get]
 func GetPostDetailHandler(c *gin.Context) {
 	// 1.获取参数 （从url中获取帖子的id）
 	pidStr := c.Param("id")
@@ -55,6 +77,17 @@ func GetPostDetailHandler(c *gin.Context) {
 	ResponseSuccess(c, data)
 }
 
+// GetPostListHandler 获取所有帖子分页列表
+// @Summary 获取所有帖子分页列表
+// @Description 需要参数，根据分页参数查询帖子分页列表
+// @Tags 帖子相关接口
+// @Accept application/x-www-form-urlencoded
+// @Produce application/json
+// @Param Authorization header string true "Bearer 用户令牌"
+// @Param object query models.ParamPage true "帖子param"
+// @Security ApiKeyAuth
+// @Success 1000 {object} models.ApiPostPage
+// @Router /posts [get]
 func GetPostListHandler(c *gin.Context) {
 	// 1.获取分页参数
 	p := new(models.ParamPage)
@@ -83,7 +116,17 @@ func GetPostListHandler(c *gin.Context) {
 	ResponseSuccess(c, posts)
 }
 
-// GetPostListHandler2 按时间排序 或 按分数排序列表 或综合热度排序
+// GetPostListHandler2 按时间排序 或 按分数排序列表 或综合热度排序，是否属于社区可选
+// @Summary 按时间排序 或 按分数排序列表 或综合热度排序，是否属于社区可选
+// @Description 需要参数，根据分页参数和排序参数和社区id(可选)查询帖子分页排序列表
+// @Tags 帖子相关接口
+// @Accept application/x-www-form-urlencoded
+// @Produce application/json
+// @Param Authorization header string true "Bearer 用户令牌"
+// @Param object query models.ParamPostListPage true "帖子param"
+// @Security ApiKeyAuth
+// @Success 1000 {object} models.ApiPostPage
+// @Router /posts2 [get]
 func GetPostListHandler2(c *gin.Context) {
 	// 1.获取分页参数
 	p := new(models.ParamPostListPage)

@@ -1,0 +1,411 @@
+basePath: api/v1
+definitions:
+  controller.ResCode:
+    enum:
+    - 1000
+    - 1001
+    - 1002
+    - 1003
+    - 1004
+    - 1005
+    - 1006
+    - 1007
+    format: int64
+    type: integer
+    x-enum-varnames:
+    - CodeSuccess
+    - CodeInvalidParam
+    - CodeUserExist
+    - CodeUserNotExist
+    - CodeInvalidPassword
+    - CodeServerBusy
+    - CodeNeedLogin
+    - CodeInvalidToken
+  controller.ResponseData:
+    properties:
+      code:
+        $ref: '#/definitions/controller.ResCode'
+      data: {}
+      msg: {}
+    type: object
+  models.ApiPostDetail:
+    properties:
+      author_id:
+        example: "0"
+        type: string
+      author_name:
+        type: string
+      community:
+        $ref: '#/definitions/models.CommunityDetail'
+      community_id:
+        example: "0"
+        type: string
+      content:
+        type: string
+      create_time:
+        type: string
+      id:
+        example: "0"
+        type: string
+      status:
+        type: integer
+      title:
+        type: string
+      vote_num:
+        type: integer
+    required:
+    - community_id
+    - content
+    - title
+    type: object
+  models.ApiPostPage:
+    properties:
+      list: {}
+      page:
+        type: integer
+      size:
+        type: integer
+      total:
+        type: integer
+    type: object
+  models.Community:
+    properties:
+      id:
+        example: "0"
+        type: string
+      name:
+        type: string
+    type: object
+  models.CommunityDetail:
+    properties:
+      create_time:
+        type: string
+      id:
+        example: "0"
+        type: string
+      introduction:
+        type: string
+      name:
+        type: string
+    type: object
+host: 127.0.0.1:8081
+info:
+  contact:
+    email: jianxinguo2019@gmail.com
+    name: XenoGuo
+    url: https://github.com/XenoGuo/bluebell
+  description: 仿reddit论坛go-web学习项目
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: bluebell
+  version: "1.0"
+paths:
+  /community:
+    get:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: 不需要参数，查询所有社区 的id 和 name 以列表json返回
+      parameters:
+      - description: Bearer 用户令牌
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "1000":
+          description: ""
+          schema:
+            items:
+              $ref: '#/definitions/models.Community'
+            type: array
+      security:
+      - ApiKeyAuth: []
+      summary: 查询所有的社区 (community_id,community_name) 以列表返回
+      tags:
+      - 社区相关接口
+  /community/:id:
+    get:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: 需要参数，通过id查询社区详情
+      parameters:
+      - description: Bearer 用户令牌
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 查询参数
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "1000":
+          description: ""
+          schema:
+            $ref: '#/definitions/models.CommunityDetail'
+      security:
+      - ApiKeyAuth: []
+      summary: 查询社区详情信息
+      tags:
+      - 社区相关接口
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: 需要参数，根据用户名和密码登录
+      parameters:
+      - description: Bearer 用户令牌
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - in: query
+        name: password
+        required: true
+        type: string
+      - in: query
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "1000":
+          description: ""
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security: []
+      summary: 用户登录
+      tags:
+      - 登录相关接口
+  /post:
+    post:
+      consumes:
+      - application/json
+      description: 需要参数，通过结构体创建帖子信息
+      parameters:
+      - description: Bearer 用户令牌
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - example: "0"
+        in: query
+        name: author_id
+        type: string
+      - example: "0"
+        in: query
+        name: community_id
+        required: true
+        type: string
+      - in: query
+        name: content
+        required: true
+        type: string
+      - in: query
+        name: create_time
+        type: string
+      - example: "0"
+        in: query
+        name: id
+        type: string
+      - in: query
+        name: status
+        type: integer
+      - in: query
+        name: title
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "1000":
+          description: ""
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - ApiKeyAuth: []
+      summary: 在社区中创建帖子
+      tags:
+      - 帖子相关接口
+  /post/:id:
+    get:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: 需要参数，根据id查询帖子详情
+      parameters:
+      - description: Bearer 用户令牌
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 帖子id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "1000":
+          description: ""
+          schema:
+            $ref: '#/definitions/models.ApiPostDetail'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取帖子详情
+      tags:
+      - 帖子相关接口
+  /posts:
+    get:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: 需要参数，根据分页参数查询帖子分页列表
+      parameters:
+      - description: Bearer 用户令牌
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - in: query
+        name: page
+        required: true
+        type: integer
+      - in: query
+        name: size
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "1000":
+          description: ""
+          schema:
+            $ref: '#/definitions/models.ApiPostPage'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取所有帖子分页列表
+      tags:
+      - 帖子相关接口
+  /posts2:
+    get:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: 需要参数，根据分页参数和排序参数和社区id(可选)查询帖子分页排序列表
+      parameters:
+      - description: Bearer 用户令牌
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - in: query
+        name: community_id
+        type: integer
+      - enum:
+        - time
+        - score
+        - hot
+        in: query
+        name: order
+        required: true
+        type: string
+      - in: query
+        name: page
+        required: true
+        type: integer
+      - in: query
+        name: size
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "1000":
+          description: ""
+          schema:
+            $ref: '#/definitions/models.ApiPostPage'
+      security:
+      - ApiKeyAuth: []
+      summary: 按时间排序 或 按分数排序列表 或综合热度排序，是否属于社区可选
+      tags:
+      - 帖子相关接口
+  /signup:
+    get:
+      consumes:
+      - application/json
+      description: 需要参数，根据用户名  密码和确认密码 注册用户
+      parameters:
+      - description: Bearer 用户令牌
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - in: query
+        name: password
+        required: true
+        type: string
+      - in: query
+        name: re_passwd
+        required: true
+        type: string
+      - in: query
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "1000":
+          description: ""
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security: []
+      summary: 注册用户
+      tags:
+      - 注册相关接口
+  /vote:
+    post:
+      consumes:
+      - application/json
+      description: 需要参数，根据帖子id和投票类型进行投票
+      parameters:
+      - description: Bearer 用户令牌
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 赞成票（1）返回票（-1）取消（0）
+        enum:
+        - -1
+        - 0
+        - 1
+        example: "0"
+        in: query
+        name: direction
+        type: string
+      - description: 帖子ID
+        example: "0"
+        in: query
+        name: post_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "1000":
+          description: ""
+          schema:
+            $ref: '#/definitions/controller.ResponseData'
+      security:
+      - ApiKeyAuth: []
+      summary: 为指定的帖子投票
+      tags:
+      - 投票相关接口
+swagger: "2.0"

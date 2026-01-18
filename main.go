@@ -21,6 +21,20 @@ import (
 	"go.uber.org/zap"
 )
 
+// @title bluebell
+// @version 1.0
+// @description 仿reddit论坛go-web学习项目
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name XenoGuo
+// @contact.url https://github.com/XenoGuo/bluebell
+// @contact.email jianxinguo2019@gmail.com
+
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host 127.0.0.1:8081
+// @BasePath api/v1
 func main() {
 	if len(os.Args) < 2 {
 		fmt.Println("need config file.eg: bluebell config.yaml")

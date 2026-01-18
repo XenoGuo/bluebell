@@ -10,6 +10,17 @@ import (
 	"go.uber.org/zap"
 )
 
+// SignUpHandler 注册用户
+// @Summary 注册用户
+// @Description 需要参数，根据用户名  密码和确认密码 注册用户
+// @Tags 注册相关接口
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string true "Bearer 用户令牌"
+// @Param object query models.ParamSignUp true "帖子json"
+// @Security
+// @Success 1000 {object} controller.ResponseData
+// @Router /signup [get]
 func SignUpHandler(c *gin.Context) {
 	// 1. 参数校验
 	var p = new(models.ParamSignUp)
@@ -34,6 +45,17 @@ func SignUpHandler(c *gin.Context) {
 	ResponseSuccess(c, nil)
 }
 
+// LoginHandler 用户登录
+// @Summary 用户登录
+// @Description 需要参数，根据用户名和密码登录
+// @Tags 登录相关接口
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string true "Bearer 用户令牌"
+// @Param object query models.ParamLogin true "帖子json"
+// @Security
+// @Success 1000 {object} controller.ResponseData
+// @Router /login [post]
 func LoginHandler(c *gin.Context) {
 	// 获取参数和参数校验
 	var p = new(models.ParamLogin)
